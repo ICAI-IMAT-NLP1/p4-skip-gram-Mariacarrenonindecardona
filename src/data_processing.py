@@ -2,6 +2,7 @@ from typing import List, Tuple, Dict, Generator
 from collections import Counter
 import torch
 import numpy as np
+import random as rn
 
 try:
     from src.utils import tokenize
@@ -42,13 +43,14 @@ def create_lookup_tables(words: List[str]) -> Tuple[Dict[str, int], Dict[int, st
         and the second maps integers to words (int_to_vocab).
     """
     # TODO
-    word_counts: Counter = Counter()
+    word_counts: Counter = Counter(words)
+
     # Sorting the words from most to least frequent in text occurrence.
     sorted_vocab: List[int] = sorted(word_counts, key=word_counts.get, reverse=True)
 
     # Create int_to_vocab and vocab_to_int dictionaries.
-    int_to_vocab: Dict[int, str] = {word: idx for idx, word in enumerate(sorted_vocab)}
-    vocab_to_int: Dict[str, int] = {idx: word for word, idx in vocab_to_int.items()}
+    vocab_to_int: Dict[int, str] = {word: idx for idx, word in enumerate(sorted_vocab)}
+    int_to_vocab: Dict[str, int] = {idx: word for word, idx in vocab_to_int.items()}
 
     return vocab_to_int, int_to_vocab
 
@@ -103,11 +105,19 @@ def get_target(words: List[str], idx: int, window_size: int = 5) -> List[str]:
         List[str]: A list of words selected randomly within the window around the target word.
     """
     # TODO
-    target_words: List[str] = None
-
+    target_words: List[str] = []
+    random_number: int = rn.randint(1,window_size)
+    start: int = max(0, idx - random_number)
+    end: int  = min(len(words), idx + random_number + 1)
+    for i in range(start, end):
+        if i != idx:
+            target_words.append(words[i])
+    
     return target_words
 
-def get_batches(words: List[int], batch_size: int, window_size: int = 5) -> Generator[Tuple[List[int], List[int]]]:
+
+#def get_batches(words: List[int], batch_size: int, window_size: int = 5) -> Generator[Tuple[List[int], List[int]]]:
+def get_batches(words, batch_size, window_size: int = 5):
     """Generate batches of word pairs for training.
 
     This function creates a generator that yields tuples of (inputs, targets),
@@ -127,9 +137,24 @@ def get_batches(words: List[int], batch_size: int, window_size: int = 5) -> Gene
     """
 
     # TODO
-    for idx in range(0, len(words), batch_size):
-        inputs, targets: Tuple[List[int], List[int]] = None, None
-        yield inputs, targets
+    pairs = []
+    
+    # Generate tuples of (input, target)
+    for idx, word in enumerate(words):
+        random_window = rn.randint(1, window_size)
+        start = max(0, idx - random_window)
+        end = min(len(words), idx + random_window + 1)
+        
+        for i in range(start, end):
+            if i != idx:
+                pairs.append((word, words[i]))
+    
+    # Yield batches
+    num_batches = len(words) // batch_size
+    for i in range(num_batches):
+        batch = pairs[i * batch_size : (i + 1) * batch_size]
+        inputs, targets = zip(*batch)
+        yield list(inputs), list(targets)
 
 def cosine_similarity(embedding: torch.nn.Embedding, valid_size: int = 16, valid_window: int = 100, device: str = 'cpu'):
     """Calculates the cosine similarity of validation words with words in the embedding matrix.
@@ -156,4 +181,18 @@ def cosine_similarity(embedding: torch.nn.Embedding, valid_size: int = 16, valid
     valid_examples: torch.Tensor = None
     similarities: torch.Tensor = None
 
+    valid_examples = torch.tensor(np.random.choice(valid_window, valid_size, replace=False), dtype=torch.long, device=device)
+    
+    # Extract the embedding vectors for the selected words
+    valid_vectors = embedding(valid_examples)  # Shape: (valid_size, embedding_dim)
+    
+    # Normalize the embeddings
+    embedding_weights = embedding.weight  # Shape: (vocab_size, embedding_dim)
+    embedding_norms = embedding_weights / embedding_weights.norm(dim=1, keepdim=True)
+    valid_vectors_norm = valid_vectors / valid_vectors.norm(dim=1, keepdim=True)
+    
+    # Compute cosine similarity
+    similarities = torch.matmul(valid_vectors_norm, embedding_norms.T)  # Shape: (valid_size, vocab_size)
+
     return valid_examples, similarities
+
