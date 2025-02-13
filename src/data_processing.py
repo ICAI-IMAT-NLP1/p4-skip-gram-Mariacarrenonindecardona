@@ -1,6 +1,7 @@
 from typing import List, Tuple, Dict, Generator
 from collections import Counter
 import torch
+import numpy as np
 
 try:
     from src.utils import tokenize
@@ -25,6 +26,8 @@ def load_and_preprocess_data(infile: str) -> List[str]:
     # TODO
     tokens: List[str] = None
 
+    tokens = tokenize(text)
+
     return tokens
 
 def create_lookup_tables(words: List[str]) -> Tuple[Dict[str, int], Dict[int, str]]:
@@ -39,13 +42,13 @@ def create_lookup_tables(words: List[str]) -> Tuple[Dict[str, int], Dict[int, st
         and the second maps integers to words (int_to_vocab).
     """
     # TODO
-    word_counts: Counter = None
+    word_counts: Counter = Counter()
     # Sorting the words from most to least frequent in text occurrence.
-    sorted_vocab: List[int] = None
-    
+    sorted_vocab: List[int] = sorted(word_counts, key=word_counts.get, reverse=True)
+
     # Create int_to_vocab and vocab_to_int dictionaries.
-    int_to_vocab: Dict[int, str] = None
-    vocab_to_int: Dict[str, int] = None
+    int_to_vocab: Dict[int, str] = {word: idx for idx, word in enumerate(sorted_vocab)}
+    vocab_to_int: Dict[str, int] = {idx: word for word, idx in vocab_to_int.items()}
 
     return vocab_to_int, int_to_vocab
 
@@ -72,9 +75,18 @@ def subsample_words(words: List[str], vocab_to_int: Dict[str, int], threshold: f
     # TODO
     # Convert words to integers
     int_words: List[int] = None
+    int_words = [vocab_to_int[word] for word in words if word in vocab_to_int]
     
     freqs: Dict[str, float] = None
     train_words: List[str] = None
+
+    word_counts = Counter(int_words)
+    total_words = len(int_words)
+    freqs = {word: count / total_words for word, count in word_counts.items()}
+
+    prob_discard = {word: 1 - np.sqrt(threshold / freq) for word, freq in freqs.items() if freq > threshold}
+
+    train_words = [word for word in int_words if np.random.rand() > prob_discard.get(word, 0)]
 
     return train_words, freqs
 
