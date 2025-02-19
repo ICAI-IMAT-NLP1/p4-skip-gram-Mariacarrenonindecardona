@@ -7,6 +7,7 @@ __pycache__/
 .mypy_cache/
 /results/
 scalers/
+nlp_practicas/
 
 # files
 *.csv
