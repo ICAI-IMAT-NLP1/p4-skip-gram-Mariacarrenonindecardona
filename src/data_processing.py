@@ -184,15 +184,15 @@ def cosine_similarity(embedding: torch.nn.Embedding, valid_size: int = 16, valid
     valid_examples = torch.tensor(np.random.choice(valid_window, valid_size, replace=False), dtype=torch.long, device=device)
     
     # Extract the embedding vectors for the selected words
-    valid_vectors = embedding(valid_examples)  # Shape: (valid_size, embedding_dim)
+    valid_vectors = embedding(valid_examples)
     
     # Normalize the embeddings
-    embedding_weights = embedding.weight  # Shape: (vocab_size, embedding_dim)
+    embedding_weights = embedding.weight
     embedding_norms = embedding_weights / embedding_weights.norm(dim=1, keepdim=True)
     valid_vectors_norm = valid_vectors / valid_vectors.norm(dim=1, keepdim=True)
     
     # Compute cosine similarity
-    similarities = torch.matmul(valid_vectors_norm, embedding_norms.T)  # Shape: (valid_size, vocab_size)
+    similarities: torch.Tensor = torch.matmul(valid_vectors_norm, embedding_norms.T)
 
     return valid_examples, similarities
 

@@ -93,7 +93,7 @@ class SkipGramNeg(nn.Module):
 
         # Reshape output vectors to size (batch_size, n_samples, n_embed)
         # TODO
-        noise_vectors: torch.Tensor = self.out_embed(noise_words)
+        noise_vectors: torch.Tensor = self.out_embed(noise_words).view(batch_size, n_samples, self.n_embed)
 
         return noise_vectors
 

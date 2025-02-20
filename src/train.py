@@ -36,7 +36,7 @@ def train_skipgram(model: SkipGramNeg,
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     criterion = NegativeSamplingLoss()
 
-    steps = 0
+    steps: int = 0
     # Training loop
     for epoch in range(epochs):
         for input_words, target_words in get_batches(words, batch_size, window_size):
@@ -47,9 +47,9 @@ def train_skipgram(model: SkipGramNeg,
 
             # input, output, and noise vectors
             # TODO
-            input_vectors = model.forward_input(inputs)
-            output_vectors = model.forward_output(targets)
-            noise_vectors =  model.forward_noise(batch_size=len(inputs), n_samples=5)
+            input_vectors: torch.Tensor = model.forward_input(inputs)
+            output_vectors: torch.Tensor = model.forward_output(targets)
+            noise_vectors: torch.Tensor =  model.forward_noise(batch_size=len(inputs), n_samples=5)
             
             # negative sampling loss
             # TODO
@@ -65,6 +65,8 @@ def train_skipgram(model: SkipGramNeg,
                 print(f"Epoch: {epoch+1}/{epochs}, Step: {steps}, Loss: {loss.item()}")
                 # Cosine similarity
                 # TODO
+                valid_examples: torch.Tensor
+                valid_similarities: torch.Tensor
                 valid_examples, valid_similarities = cosine_similarity(model.out_embed, device=device)
                 _, closest_idxs = valid_similarities.topk(6)
 
