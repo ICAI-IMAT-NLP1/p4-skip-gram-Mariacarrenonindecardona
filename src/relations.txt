@@ -1,0 +1,11 @@
+In this file "relations.txt" I'm going to make a comment about the learned relationships by my model.
+
+In the image we can see how words with similar meanings have come together. For example, we can see the words: {north, south, river, island, islands}, which makes 
+sense that they are together since they represent things related with nature. If we move a little bit, we can find the words: {east, west, area, km}, which makes 
+sense since both of these groups have similar meanings. If then we move a little bit, we can find the words: {country, population, million, total, zero, seven, 
+six, one, three, new york, london}, which is reasonable, since this group maybe represents more the demography rather than the geography. In the image we can also
+find the words {century, th, empire, age, ii, king, son} together, which are words that could be related to a more historical point of view. If we continue moving 
+a little bit, we can find the words: {germany, french, soviet, general, army, war, forces, political, death, battle}. It makes sense that this words are together 
+since they could be representing a period related to the war. We can also see how some letters are places together, which means that they are also recognized as 
+similar. In conlusion, I believe that my model is making the word embeddings correctly, since word embeddings are supposed to transform a word into a vector, but 
+the vector needs to save the characteristics of the words. We can see that this is happening since similar words are represented in similar places in space.
